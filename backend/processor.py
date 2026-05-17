@@ -40,7 +40,7 @@ class MarketProcessor:
             try:
                 segment = 'nse_indices' if symbol == Config.VIX_SYMBOL else 'nse_cm'
                 
-                scrip = self.client.search_scrip(exchange=Config.DEFAULT_EXCHANGE, symbol=symbol)
+                scrip = self.client.search_scrip(exchange_segment=segment, symbol=symbol)
                 
                 if scrip:
                     token = scrip[0]['instrument_token']

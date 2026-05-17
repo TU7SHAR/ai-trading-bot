@@ -42,5 +42,28 @@ async def analyze_stock(symbol: str):
         "recommendation": decision
     }
 
+@app.get("/search/{query}")
+async def search_symbols(query: str):
+    try:
+        # Fixed: V2 uses 'exchange_segment' instead of 'exchange'
+        results = market_processor.client.search_scrip(exchange_segment="nse_cm", symbol=query.upper())
+        
+        formatted_results = []
+        if results:
+            for item in results[:8]:
+                sym = item.get('pSymbolName') or item.get('trdSymbol') or item.get('ts')
+                name = item.get('pEngName') or item.get('companyName')
+                
+                if sym:
+                    formatted_results.append({
+                        "symbol": sym,
+                        "name": name.title() if name else "NSE Listed Equity"
+                    })
+        return formatted_results
+    except Exception as e:
+        print(f"Search API error: {e}")
+        return []
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, ws="none")
