@@ -34,32 +34,27 @@ async def track_stock_live(symbol: str):
 @app.get("/brain/analyze/{symbol}")
 async def analyze_stock(symbol: str):
     from brain import fingpt
-    sentiment = fingpt.get_sentiment(f"Latest market movement for {symbol}")
-    decision = "BUY" if sentiment > 0.3 else "SELL" if sentiment < -0.3 else "HOLD"
+    analysis_results = fingpt.get_detailed_analysis(f"Latest market movement for {symbol}")
     return {
         "symbol": symbol,
-        "sentiment_score": sentiment,
-        "recommendation": decision
+        **analysis_results
     }
 
 @app.get("/search/{query}")
 async def search_symbols(query: str):
     try:
         raw_results = market_processor.client.search_scrip(exchange_segment="nse_cm", symbol=query.upper())
-        
         if str(type(raw_results)) == "<class 'pandas.core.frame.DataFrame'>":
             results_list = raw_results.to_dict('records')
         elif isinstance(raw_results, dict):
             results_list = raw_results.get('data', [])
         else:
             results_list = raw_results
-            
         formatted_results = []
         if isinstance(results_list, list):
             for item in results_list[:8]:
                 sym = item.get('pSymbolName') or item.get('trdSymbol') or item.get('ts') or item.get('symbol')
                 name = item.get('pEngName') or item.get('companyName') or item.get('name')
-                
                 if sym:
                     formatted_results.append({
                         "symbol": str(sym),

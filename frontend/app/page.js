@@ -16,7 +16,6 @@ export default function Home() {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
 
-  // Live Dropdown states
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -24,7 +23,6 @@ export default function Home() {
 
   const API_URL = "http://localhost:8000";
 
-  // Close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -35,7 +33,6 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced Live Search against Kotak API
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (symbol.trim().length >= 2) {
@@ -48,7 +45,7 @@ export default function Home() {
             setShowDropdown(data.length > 0);
           }
         } catch (err) {
-          console.error("Live search failed", err);
+          console.error(err);
         } finally {
           setIsSearching(false);
         }
@@ -56,7 +53,7 @@ export default function Home() {
         setSuggestions([]);
         setShowDropdown(false);
       }
-    }, 300); // Waits 300ms after you stop typing
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [symbol]);
@@ -153,9 +150,8 @@ export default function Home() {
                 autoComplete="off"
               />
 
-              {/* Live Autocomplete Dropdown */}
               {showDropdown && (
-                <ul className="absolute left-0 right-0 mt-3 z-20 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                <ul className="absolute left-0 right-0 mt-3 z-20 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                   {isSearching && suggestions.length === 0 ? (
                     <li className="px-5 py-4 text-slate-400 text-sm flex items-center justify-center">
                       <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mr-2"></div>
@@ -201,7 +197,6 @@ export default function Home() {
           </form>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="flex justify-center py-12">
             <div className="animate-pulse flex flex-col items-center gap-3">
@@ -213,7 +208,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Error State */}
         {error && (
           <div className="p-4 bg-red-50 text-red-700 rounded-xl flex items-start gap-3 border border-red-100 mb-6">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -224,9 +218,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Tracking Result */}
         {trackStatus && (
-          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
             <div className="bg-green-100 p-3 rounded-full text-green-600">
               <CheckCircle2 className="w-6 h-6" />
             </div>
@@ -239,40 +232,81 @@ export default function Home() {
           </div>
         )}
 
-        {/* Analysis Result */}
         {analysis && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="p-6 border-b border-slate-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 mb-1">
-                    AI Recommendation
-                  </p>
-                  <h3 className="text-2xl font-bold text-slate-900">
-                    {analysis.symbol}
-                  </h3>
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h3 className="text-xl font-bold text-slate-800 px-1">
+              Analysis Breakdown: {analysis.symbol}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div className="p-6 border-b border-slate-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        Groq (Llama-3 70B)
+                      </p>
+                      <span
+                        className={`inline-block mt-1 px-3 py-1 rounded-full font-bold text-xs tracking-wide ${
+                          analysis.groq.recommendation === "BUY"
+                            ? "bg-green-100 text-green-700"
+                            : analysis.groq.recommendation === "SELL"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {analysis.groq.recommendation}
+                      </span>
+                    </div>
+                    <div className="font-mono text-lg font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-lg">
+                      {analysis.groq.sentiment_score > 0 ? "+" : ""}
+                      {analysis.groq.sentiment_score.toFixed(2)}
+                    </div>
+                  </div>
                 </div>
-                <div
-                  className={`px-4 py-1.5 rounded-full font-bold text-sm tracking-wide ${
-                    analysis.recommendation === "BUY"
-                      ? "bg-green-100 text-green-700"
-                      : analysis.recommendation === "SELL"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  {analysis.recommendation}
+                <div className="p-6 bg-slate-50/50 flex-1">
+                  <p className="text-sm font-semibold text-slate-500 mb-1">
+                    Reasoning Output
+                  </p>
+                  <p className="text-slate-700 text-sm leading-relaxed">
+                    {analysis.groq.reasoning}
+                  </p>
                 </div>
               </div>
-            </div>
-            <div className="bg-slate-50 p-6 flex justify-between items-center">
-              <span className="text-slate-500 font-medium">
-                Confidence Score
-              </span>
-              <span className="font-mono text-lg font-semibold text-slate-700">
-                {analysis.sentiment_score > 0 ? "+" : ""}
-                {analysis.sentiment_score.toFixed(2)}
-              </span>
+
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div className="p-6 border-b border-slate-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-slate-500 mb-1">
+                        Gemini 3.1 Flash-Lite
+                      </p>
+                      <span
+                        className={`inline-block mt-1 px-3 py-1 rounded-full font-bold text-xs tracking-wide ${
+                          analysis.gemini.recommendation === "BUY"
+                            ? "bg-green-100 text-green-700"
+                            : analysis.gemini.recommendation === "SELL"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {analysis.gemini.recommendation}
+                      </span>
+                    </div>
+                    <div className="font-mono text-lg font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-lg">
+                      {analysis.gemini.sentiment_score > 0 ? "+" : ""}
+                      {analysis.gemini.sentiment_score.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 bg-slate-50/50 flex-1">
+                  <p className="text-sm font-semibold text-slate-500 mb-1">
+                    Reasoning Output
+                  </p>
+                  <p className="text-slate-700 text-sm leading-relaxed">
+                    {analysis.gemini.reasoning}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
