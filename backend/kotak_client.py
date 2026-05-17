@@ -1,4 +1,7 @@
-from neo_api_client import NeoAPI
+try:
+    from neo_api_client import NeoAPI
+except ImportError:
+    NeoAPI = None
 from config import Config
 
 def get_client():
