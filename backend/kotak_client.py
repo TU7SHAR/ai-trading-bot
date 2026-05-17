@@ -10,12 +10,14 @@ def get_client():
 
 def login_session(client, totp):
     try:
-        client.login(
-            mobile_number=Config.MOBILE,
+        # V2 Updated Login Method
+        client.totp_login(
+            mobilenumber=Config.MOBILE,
             ucc=Config.UCC,
             totp=totp
         )
-        client.session_2fa(Config.MPIN)
+        # V2 Updated Validation Method
+        client.totp_validate(mpin=Config.MPIN)
         return True
     except Exception as e:
         print(f"Login failed: {e}")
