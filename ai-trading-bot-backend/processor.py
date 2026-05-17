@@ -1,13 +1,13 @@
 import asyncio
-import pytz
 from datetime import datetime, time
+from zoneinfo import ZoneInfo
 from database import SessionLocal, PriceHistory, upsert_market_data
 from kotak_client import get_client
 from config import Config
 
 def is_market_open():
-    ist = pytz.timezone('Asia/Kolkata')
-    now = datetime.now(ist)
+    ist = ZoneInfo('Asia/Kolkata')
+    now = datetime.now(tz=ist)
     
     if now.weekday() > 4:
         return False
@@ -22,6 +22,7 @@ class MarketProcessor:
         self.queue = asyncio.PriorityQueue()
         self.client = get_client()
         self.is_running = True
+        self.override_market_hours = False
 
     async def add_request(self, symbol, priority=2):
         await self.queue.put((priority, symbol))
@@ -29,7 +30,7 @@ class MarketProcessor:
     async def process_loop(self):
         print("Market Processor Engine Started...")
         while self.is_running:
-            if not is_market_open():
+            if not is_market_open() and not self.override_market_hours:
                 print("Market is closed. Sleeping...")
                 await asyncio.sleep(60)
                 continue
