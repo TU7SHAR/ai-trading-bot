@@ -6,7 +6,6 @@ import "../app/globals.css";
 export default function RootLayout({ children }) {
   const [isDark, setIsDark] = useState(true);
 
-  // Synchronize state preferences with the global DOM element
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -17,92 +16,61 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en" className={isDark ? "dark" : ""}>
-      <body
-        className={`antialiased font-mono transition-colors duration-300 min-h-screen flex flex-col md:flex-row ${
-          isDark ? "bg-zinc-950 text-zinc-100" : "bg-zinc-50 text-zinc-900"
-        }`}
-      >
-        {/* PERSISTENT MINIMALIST SIDEBAR CONTROL PANEL */}
-        <aside
-          className={`w-full md:w-64 border-b md:border-b-0 md:border-r p-6 flex flex-col shrink-0 transition-colors duration-300 ${
-            isDark ? "bg-zinc-950 border-zinc-800" : "bg-white border-zinc-200"
-          }`}
-        >
-          {/* Workspace Ticker Label */}
+      <body className="antialiased min-h-screen flex flex-col md:flex-row font-mono text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-200">
+        {/* PERSISTENT SYSTEM NAVIGATION SIDEBAR */}
+        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r p-6 flex flex-col shrink-0 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 transition-colors duration-200">
           <div className="flex items-center justify-between mb-8">
             <div className="flex flex-col">
-              <span className="text-xs font-black tracking-tight tracking-widest uppercase">
-                QUANT_LAB
+              <span className="text-xs font-bold tracking-widest uppercase">
+                QUANT_DESK
               </span>
-              <span className="text-[9px] text-zinc-400 font-sans tracking-wide">
-                Terminal Workspace
+              <span className="text-[10px] text-zinc-400 font-sans mt-0.5">
+                Terminal Node v2.4
               </span>
             </div>
 
-            {/* STYLISH PILL-SHAPED RADIUS TOGGLE BUTTON */}
+            {/* THEME CONTROLLER TOGPLE BUTTON */}
             <button
               onClick={() => setIsDark(!isDark)}
-              className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 ${
-                isDark
-                  ? "bg-white text-zinc-950 border-white hover:bg-zinc-200"
-                  : "bg-zinc-950 text-white border-zinc-950 hover:bg-zinc-800"
-              }`}
+              className="text-[10px] font-bold px-3 py-1 rounded-xl border transition-all active:scale-95 bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:border-zinc-950 dark:hover:border-white text-zinc-900 dark:text-zinc-100"
             >
-              <span>{isDark ? "○ LIGHT" : "● DARK"}</span>
+              {isDark ? "MODE: LIGHT" : "MODE: DARK"}
             </button>
           </div>
 
-          {/* Navigation Anchors Layout */}
-          <nav className="flex flex-col gap-1.5 flex-1 text-xs">
+          <nav className="flex flex-col gap-1 text-xs">
             <a
               href="/"
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                isDark
-                  ? "bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:text-white hover:border-zinc-700"
-                  : "bg-zinc-100/70 border-zinc-200 text-zinc-600 hover:text-black hover:border-zinc-400"
-              }`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
             >
-              <span className="text-xs">01 //</span>
-              <span className="font-medium tracking-wide">LIVE MONITOR</span>
+              <span>01 /</span>
+              <span>LIVE CORE MONITOR</span>
             </a>
             <a
               href="/trade-plans"
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                isDark
-                  ? "bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:text-white hover:border-zinc-700"
-                  : "bg-zinc-100/70 border-zinc-200 text-zinc-600 hover:text-black hover:border-zinc-400"
-              }`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
             >
-              <span className="text-xs">02 //</span>
-              <span className="font-medium tracking-wide">AI PLANS</span>
+              <span>02 /</span>
+              <span>AI EXECUTION PLAN</span>
             </a>
             <a
               href="/charts"
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                isDark
-                  ? "bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:text-white hover:border-zinc-700"
-                  : "bg-zinc-100/70 border-zinc-200 text-zinc-600 hover:text-black hover:border-zinc-400"
-              }`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-all"
             >
-              <span className="text-xs">03 //</span>
-              <span className="font-medium tracking-wide">TAPE FEED</span>
+              <span>03 /</span>
+              <span>HIGH FREQ TAPE</span>
             </a>
           </nav>
 
-          {/* Network Connection Footprints */}
-          <div className="mt-auto pt-4 border-t border-zinc-800 font-mono text-[9px] text-zinc-400 flex justify-between items-center">
-            <span>SYS_STATUS:</span>
-            <span
-              className={
-                isDark ? "text-white font-bold" : "text-zinc-950 font-bold"
-              }
-            >
-              SYS_READY
+          <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 font-mono text-[9px] text-zinc-400 flex justify-between items-center">
+            <span>SOCKET_STATUS:</span>
+            <span className="font-bold text-zinc-900 dark:text-white">
+              SYNCHRONIZED
             </span>
           </div>
         </aside>
 
-        {/* PAGE CONTENT CONTAINER EXPOSURE GRID */}
+        {/* WORKSPACE VIEW AREA */}
         <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
           {children}
         </main>
