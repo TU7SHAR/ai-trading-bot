@@ -13,12 +13,37 @@ export default function PrimaryDeskMonitor() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Fallback initial list
   const [watchlist, setWatchlist] = useState([
     { symbol: "INDIA VIX", description: "Volatility Benchmark Index" },
     { symbol: "SILVERBEES-EQ", description: "Nippon India Silver ETF" },
     { symbol: "TATSILV-EQ", description: "Tata Capital Silver ETF" },
     { symbol: "RELIANCE-EQ", description: "Reliance Industries Equity" },
   ]);
+
+  // 1. PERSISTENCE LAYER: Load saved symbols from storage on initialization
+  useEffect(() => {
+    const savedWatchlist = localStorage.getItem("quant_desk_watchlist");
+    if (savedWatchlist) {
+      try {
+        setWatchlist(JSON.parse(savedWatchlist));
+      } catch (err) {
+        console.error("Failed parsing stored watchlist:", err);
+      }
+    }
+  }, []);
+
+  // Helper method to update state and save to local storage simultaneously
+  const saveWatchlistUpdate = (updatedList) => {
+    setWatchlist(updatedList);
+    localStorage.setItem("quant_desk_watchlist", JSON.stringify(updatedList));
+  };
+
+  // Helper method to remove an asset from your active layout matrix
+  const removeAssetFromWatchlist = (symToRemove) => {
+    const filtered = watchlist.filter((item) => item.symbol !== symToRemove);
+    saveWatchlistUpdate(filtered);
+  };
 
   useEffect(() => {
     if (!symbol.trim()) {
@@ -67,40 +92,40 @@ export default function PrimaryDeskMonitor() {
   };
 
   return (
-    <div className="p-6 max-w-7xl w-full mx-auto flex flex-col gap-6 text-zinc-900 dark:text-zinc-100">
-      {/* MONITOR CONTROL STATUS BAR */}
-      <header className="border p-5 rounded-xl bg-white dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
+    <div className="max-w-7xl w-full mx-auto flex flex-col gap-3 text-zinc-600 dark:text-zinc-400">
+      {/* STATUS GATEWAY PANEL */}
+      <header className="p-3.5 rounded-lg bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 transition-all">
         <div>
-          <h2 className="font-bold">// DATA_STREAM_GATEWAY</h2>
-          <p className="text-[10px] text-zinc-400 font-sans mt-0.5">
-            Telemetry parser routing matrix endpoint node validation execution
-            link.
+          <h2 className="font-semibold text-xs text-zinc-800 dark:text-zinc-200">
+            Data Stream Gateway
+          </h2>
+          <p className="text-[10px] text-zinc-400 mt-0.5">
+            Real-time gateway routing endpoint validation matrix nodes.
           </p>
         </div>
-        <div className="text-[9px] border px-3 py-1 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
-          GATEWAY: <span className="font-bold">{API_URL}</span>
+        <div className="text-[10px] px-2.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-zinc-800/80">
+          Node: <span className="font-mono">{API_URL}</span>
         </div>
       </header>
 
-      {/* COMPONENT CONTENT LAYOUT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* SIDE ACTIONS BAR DECK */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* SCRIP SEARCH FILTER INPUT */}
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl relative transition-colors">
-            <span className="text-[10px] text-zinc-400 block mb-2">
-              INDEX TRACKER SELECTOR
+      {/* GRID CONTAINER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div className="lg:col-span-4 flex flex-col gap-3">
+          {/* INPUT FILTER */}
+          <div className="bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 p-3.5 rounded-lg relative">
+            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+              Asset Filter
             </span>
             <input
               type="text"
-              placeholder="SEARCH SYMBOL..."
+              placeholder="Search symbol..."
               value={symbol}
               onChange={(e) => setSymbol(e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-all text-zinc-900 dark:text-zinc-100"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 focus:outline-none focus:border-zinc-400 text-xs text-zinc-800 dark:text-zinc-200"
             />
 
             {suggestions.length > 0 && (
-              <div className="absolute left-5 right-5 mt-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-50 max-h-44 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="absolute left-3.5 right-3.5 mt-1 bg-[#fcfbfa] dark:bg-zinc-950 border border-zinc-300/60 dark:border-zinc-800 rounded shadow-md z-50 max-h-40 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
                 {suggestions.map((item, idx) => (
                   <div
                     key={idx}
@@ -108,16 +133,19 @@ export default function PrimaryDeskMonitor() {
                       setSymbol("");
                       setSuggestions([]);
                       if (!watchlist.some((w) => w.symbol === item.symbol)) {
-                        setWatchlist([
+                        // Persist updates cleanly to internal memory and local storage
+                        saveWatchlistUpdate([
                           ...watchlist,
                           { symbol: item.symbol, description: item.name },
                         ]);
                       }
                     }}
-                    className="p-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer flex flex-col"
+                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer flex flex-col"
                   >
-                    <span className="font-bold">{item.symbol}</span>
-                    <span className="text-[10px] text-zinc-400 font-sans truncate">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                      {item.symbol}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 truncate">
                       {item.name}
                     </span>
                   </div>
@@ -126,39 +154,51 @@ export default function PrimaryDeskMonitor() {
             )}
           </div>
 
-          {/* ACTIVE WATCHLIST SYSTEM MATRIX GRID */}
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl flex-1 flex flex-col transition-colors">
-            <span className="text-[10px] text-zinc-400 block mb-3">
-              SYSTEM DESK WATCHLIST
+          {/* MONITOR WATCHLIST DISPLAY */}
+          <div className="bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 p-3.5 rounded-lg flex-1 flex flex-col">
+            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block mb-2">
+              Watchlist Deck
             </span>
-            <div className="flex flex-col gap-2 overflow-y-auto max-h-[440px]">
+            <div className="flex flex-col gap-1.5 overflow-y-auto max-h-[380px]">
               {watchlist.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 border rounded-lg transition-all ${
+                  className={`p-2.5 border rounded transition-all relative group ${
                     selectedAsset === item.symbol
-                      ? "bg-zinc-100 dark:bg-zinc-950 border-zinc-400 dark:border-zinc-200"
-                      : "bg-zinc-50/50 dark:bg-black/10 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      ? "bg-zinc-200/50 dark:bg-zinc-800/60 border-zinc-400 dark:border-zinc-600"
+                      : "bg-zinc-50/60 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/40 hover:border-zinc-300"
                   }`}
                 >
-                  <div>
-                    <span className="font-bold block">{item.symbol}</span>
-                    <span className="text-[10px] text-zinc-400 font-sans line-clamp-1 mt-0.5">
-                      {item.description}
-                    </span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">
+                        {item.symbol}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 line-clamp-1">
+                        {item.description}
+                      </span>
+                    </div>
+                    {/* Delete item click target handler */}
+                    <button
+                      onClick={() => removeAssetFromWatchlist(item.symbol)}
+                      className="text-[10px] text-zinc-300 hover:text-rose-500 transition-colors font-bold cursor-pointer px-1"
+                      title="Remove asset"
+                    >
+                      ×
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-4 text-[9px]">
+                  <div className="flex gap-1.5 mt-2">
                     <button
                       onClick={() => triggerLiveTracking(item.symbol)}
-                      className="border border-zinc-200 dark:border-zinc-700 rounded-md hover:border-zinc-400 dark:hover:border-zinc-500 py-1 bg-white dark:bg-zinc-900 transition-colors"
+                      className="flex-1 border border-zinc-300 dark:border-zinc-700 rounded hover:bg-white dark:hover:bg-zinc-800 py-0.5 font-medium text-[10px] text-zinc-600 dark:text-zinc-400 cursor-pointer"
                     >
-                      [ TRACK ]
+                      Track
                     </button>
                     <button
                       onClick={() => executeQuantAnalysis(item.symbol)}
-                      className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-md font-bold py-1 transition-opacity hover:opacity-80"
+                      className="flex-1 bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-medium py-0.5 text-[10px] hover:opacity-90 cursor-pointer"
                     >
-                      [ ANALYZE ]
+                      Analyze
                     </button>
                   </div>
                 </div>
@@ -167,86 +207,84 @@ export default function PrimaryDeskMonitor() {
           </div>
         </div>
 
-        {/* RIGHT STRATEGIC EVALUATION MATRICES DISPLAY */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+        {/* ANALYSIS VIEW TIERS */}
+        <div className="lg:col-span-8 flex flex-col gap-3">
+          <div className="bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 p-3.5 rounded-lg flex items-center justify-between">
             <div>
-              <p className="text-[9px] text-zinc-400 uppercase">
-                AUDIT MATRIX OBJECT REFERENCE
+              <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                Evaluation Profile
               </p>
-              <h2 className="font-bold tracking-tight mt-0.5">
+              <h2 className="text-sm font-semibold text-zinc-800 dark:text-white mt-0.5">
                 {selectedAsset}
               </h2>
             </div>
             {loading && (
-              <span className="border border-zinc-400 dark:border-zinc-200 px-3 py-1 rounded-md animate-pulse text-[9px]">
-                CALCULATING COGNITIVE MODEL FIELD VALUES...
+              <span className="text-[10px] text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded animate-pulse">
+                Evaluating models...
               </span>
             )}
           </div>
 
           {analysis ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* GROQ ASSESSMENT LOG SHEET FILE */}
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col transition-colors">
-                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black/30 p-4 flex justify-between items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-zinc-100/50 dark:bg-zinc-950 p-2.5 border-b border-zinc-200/60 dark:border-zinc-800 flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold">ENGINE_A // MODEL</h3>
-                    <p className="text-[9px] text-zinc-400 font-sans">
-                      Llama-3.3 70B
-                    </p>
+                    <h3 className="font-semibold text-zinc-800 dark:text-zinc-200 text-xs">
+                      Engine A
+                    </h3>
+                    <p className="text-[9px] text-zinc-400">Llama-3.3 70B</p>
                   </div>
-                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded bg-zinc-50 dark:bg-zinc-950 font-bold">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                     {analysis.groq?.recommendation || "HOLD"}
                   </span>
                 </div>
-                <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2 rounded-lg flex justify-between">
-                    <span className="text-zinc-400">NET CONVICTION VALUE:</span>
-                    <span className="font-bold">
+                <div className="p-3 flex flex-col gap-2 flex-1">
+                  <div className="bg-zinc-50 dark:bg-zinc-950 p-1.5 rounded border border-zinc-200/40 dark:border-zinc-800/80 flex justify-between text-[10px]">
+                    <span className="text-zinc-400">Conviction Weight:</span>
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
                       {analysis.groq?.sentiment_score?.toFixed(2)}
                     </span>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-lg text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                  <div className="bg-zinc-50/40 dark:bg-zinc-950/20 p-2 rounded text-[11px] leading-relaxed min-h-[160px] whitespace-pre-wrap border border-zinc-200/40 dark:border-zinc-800/40 text-zinc-500 dark:text-zinc-400">
                     {analysis.groq?.reasoning}
                   </div>
                 </div>
               </div>
 
-              {/* GEMINI ASSESSMENT LOG SHEET FILE */}
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col transition-colors">
-                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black/30 p-4 flex justify-between items-center">
+              <div className="bg-[#fcfbfa] dark:bg-zinc-900/60 border border-zinc-300/50 dark:border-zinc-800/80 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-zinc-100/50 dark:bg-zinc-950 p-2.5 border-b border-zinc-200/60 dark:border-zinc-800 flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold">ENGINE_B // MATRIX</h3>
-                    <p className="text-[9px] text-zinc-400 font-sans">
-                      Flash-Lite 3.1
-                    </p>
+                    <h3 className="font-semibold text-zinc-800 dark:text-zinc-200 text-xs">
+                      Engine B
+                    </h3>
+                    <p className="text-[9px] text-zinc-400">Flash-Lite 3.1</p>
                   </div>
-                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded bg-zinc-50 dark:bg-zinc-950 font-bold">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600">
                     {analysis.gemini?.recommendation || "HOLD"}
                   </span>
                 </div>
-                <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2 rounded-lg flex justify-between">
-                    <span className="text-zinc-400">NET CONVICTION VALUE:</span>
-                    <span className="font-bold">
+                <div className="p-3 flex flex-col gap-2 flex-1">
+                  <div className="bg-zinc-50 dark:bg-zinc-950 p-1.5 rounded border border-zinc-200/40 dark:border-zinc-800/80 flex justify-between text-[10px]">
+                    <span className="text-zinc-400">Conviction Weight:</span>
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
                       {analysis.gemini?.sentiment_score?.toFixed(2)}
                     </span>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-lg text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                  <div className="bg-zinc-50/40 dark:bg-zinc-950/20 p-2 rounded text-[11px] leading-relaxed min-h-[160px] whitespace-pre-wrap border border-zinc-200/40 dark:border-zinc-800/40 text-zinc-500 dark:text-zinc-400">
                     {analysis.gemini?.reasoning}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 rounded-xl flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
-              <span className="text-zinc-400 uppercase font-bold tracking-wider text-[10px]">
-                [ SYSTEM LOG VECTOR UNINITIALIZED ]
+            <div className="border border-dashed border-zinc-300 dark:border-zinc-800 bg-[#fcfbfa]/40 dark:bg-zinc-900/10 rounded-lg flex-1 flex flex-col items-center justify-center p-6 text-center min-h-[260px]">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                Log Vector Uninitialized
               </span>
-              <p className="text-zinc-400 font-sans max-w-xs mt-2 leading-relaxed">
-                Fire an execution assessment command array from yourwatched
-                asset list component grid to run multi-factor data models.
+              <p className="text-zinc-400 text-[10px] max-w-xs mt-1 leading-relaxed">
+                Execute an assessment mapping array configuration from your
+                watched parameters context above.
               </p>
             </div>
           )}

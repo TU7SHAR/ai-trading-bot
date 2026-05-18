@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import "../app/globals.css";
 
 export default function RootLayout({ children }) {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     if (isDark) {
@@ -16,59 +16,60 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en" className={isDark ? "dark" : ""}>
-      <body className="antialiased min-h-screen flex flex-col md:flex-row font-mono text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-150">
-        {/* PERSISTENT SYSTEM FRAME SIDEBAR */}
-        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r p-6 flex flex-col shrink-0 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 transition-colors duration-150">
-          <div className="flex items-center justify-between mb-8">
+      <body className="antialiased min-h-screen flex flex-col md:flex-row text-xs text-zinc-600 dark:text-zinc-400 transition-colors duration-150">
+        {/* MUTED SIDEBAR ASIDE */}
+        <aside className="w-full md:w-52 p-4 flex flex-col shrink-0 bg-[#ebeae6] dark:bg-zinc-900/40 border-b md:border-b-0 md:border-r border-zinc-300/60 dark:border-zinc-800/80 transition-all">
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-zinc-300/40 dark:border-zinc-800">
             <div className="flex flex-col">
-              <span className="font-bold tracking-wider">QUANT_CORE</span>
+              <span className="font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight flex items-center gap-1.5">
+                <span className="h-2 w-2 bg-zinc-400 dark:bg-zinc-500 rounded-full inline-block"></span>
+                QuantCore
+              </span>
               <span className="text-[10px] text-zinc-400 mt-0.5">
-                Workspace Node v2.4
+                Workspace v2.4
               </span>
             </div>
 
             <button
               onClick={() => setIsDark(!isDark)}
-              className="text-[10px] font-bold px-3 py-1 border rounded bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-zinc-100 text-zinc-900 dark:text-zinc-100 transition-colors"
+              className="text-[10px] px-2 py-1 rounded border bg-[#f4f3ef] dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all cursor-pointer"
             >
-              {isDark ? "LIGHT_MODE" : "DARK_MODE"}
+              {isDark ? "Light" : "Dark"}
             </button>
           </div>
 
-          <nav className="flex flex-col gap-1 text-[11px]">
+          <nav className="flex flex-col gap-0.5">
             <a
               href="/"
-              className="flex items-center gap-2 px-3 py-2 rounded border bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800/80 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300/40 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition-all"
             >
-              <span>01 /</span>
-              <span>LIVE_DESK_MONITOR</span>
+              <span>Live Desk Monitor</span>
             </a>
             <a
               href="/trade-plans"
-              className="flex items-center gap-2 px-3 py-2 rounded border bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300/40 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition-all"
             >
-              <span>02 /</span>
-              <span>STRATEGIC_PLANNER</span>
+              <span>Strategic Planner</span>
             </a>
             <a
               href="/charts"
-              className="flex items-center gap-2 px-3 py-2 rounded border bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800/60 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300/40 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition-all"
             >
-              <span>03 /</span>
-              <span>TAPE_STREAM_FEED</span>
+              <span>Tape Stream Feed</span>
             </a>
           </nav>
 
-          <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 text-[9px] text-zinc-400 flex justify-between items-center">
-            <span>CONN_STATUS:</span>
-            <span className="font-bold text-zinc-900 dark:text-white">
-              ESTABLISHED
+          <div className="mt-auto pt-3 border-t border-zinc-300/40 dark:border-zinc-800 text-[10px] text-zinc-400 flex justify-between items-center">
+            <span>Status:</span>
+            <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
+              <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full"></span>{" "}
+              Connected
             </span>
           </div>
         </aside>
 
-        {/* INHERITED WORKSPACE FRAME DISPLAY AREA */}
-        <main className="flex-1 min-w-0 flex flex-col bg-zinc-50 dark:bg-zinc-950 transition-colors duration-150">
+        {/* MAIN DESK DISPLAY WORKSPACE */}
+        <main className="flex-1 min-w-0 flex flex-col p-4 transition-all">
           {children}
         </main>
       </body>

@@ -79,28 +79,52 @@ class MarketProcessor:
                 if not token:
                     print(f"[{symbol}] Could not find a valid token in segment '{segment}'.")
                 else:
-                    quote = self.client.quotes(
-                        instrument_tokens=[{'instrument_token': str(token), 'exchange_segment': segment}],
-                        quote_type='ltp'
-                    )
+                    # UPGRADED: Pull full quote information to capture real-time order depth data
+                    try:
+                        quote = self.client.quotes(
+                            instrument_tokens=[{'instrument_token': str(token), 'exchange_segment': segment}],
+                            quote_type='all'
+                        )
+                    except Exception:
+                        quote = self.client.quotes(
+                            instrument_tokens=[{'instrument_token': str(token), 'exchange_segment': segment}],
+                            quote_type='ltp'
+                        )
                     
                     price = None
+                    buy_vol = 1.0
+                    sell_vol = 1.0
+                    
                     if isinstance(quote, dict):
                         msg_data = quote.get('message', quote.get('data', []))
                         if isinstance(msg_data, list) and len(msg_data) > 0 and isinstance(msg_data[0], dict):
-                            price = msg_data[0].get('last_traded_price') or msg_data[0].get('ltp')
+                            q_data = msg_data[0]
                         elif isinstance(msg_data, dict):
-                            price = msg_data.get('last_traded_price') or msg_data.get('ltp')
-                    elif isinstance(quote, list) and len(quote) > 0 and isinstance(quote[0], dict):
-                        price = quote[0].get('last_traded_price') or quote[0].get('ltp')
+                            q_data = msg_data
+                        else:
+                            q_data = quote
+                        
+                        price = q_data.get('last_traded_price') or q_data.get('ltp')
+                        buy_vol = q_data.get('totalBuyQuantity') or q_data.get('totBuyQty') or q_data.get('tbq') or 1.0
+                        sell_vol = q_data.get('totalSellQuantity') or q_data.get('totSellQty') or q_data.get('tsq') or 1.0
                         
                     if price is not None:
                         price = float(price)
+                        buy_vol = float(buy_vol)
+                        sell_vol = float(sell_vol)
+                        obi_ratio = round(buy_vol / sell_vol, 3) if sell_vol > 0 else 1.0
+                        
+                        # Maintain live snapshot tracking table
                         upsert_market_data(symbol, price)
-                        status = "VOLATILE" if "VIX" in symbol.upper() and price > 20 else "STABLE"
-                        print(f"[{'HIGH' if priority==1 else 'IDLE'} | {status}] {symbol}: ₹{price}")
+                        
+                        # NEW: Commit snapshot to our historical time-series data table
+                        from database import save_order_book_tick
+                        save_order_book_tick(symbol, price, buy_vol, sell_vol, obi_ratio)
+                        
+                        status = "BUY_PRESSURE" if obi_ratio > 1.2 else ("SELL_PRESSURE" if obi_ratio < 0.8 else "BALANCED")
+                        print(f"[{'HIGH' if priority==1 else 'IDLE'} | {status}] {symbol}: ₹{price} | OBI: {obi_ratio}")
                     else:
-                        print(f"[{symbol}] Could not extract live price. Response structure: {quote}")
+                        print(f"[{symbol}] Could not extract live data fields. Response: {quote}")
 
             except Exception as e:
                 print(f"Error processing {symbol}: {repr(e)}")
@@ -108,7 +132,7 @@ class MarketProcessor:
             if priority == 2:
                 asyncio.create_task(self._delayed_requeue(symbol, priority))
 
-            wait_time = 0.5 if priority == 1 else 2.0
+            wait_time = 1.0 if priority == 1 else 3.0
             await asyncio.sleep(wait_time)
             self.queue.task_done()
 
