@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export default function AssetMonitorRoom() {
+export default function PrimaryDeskMonitor() {
   const [symbol, setSymbol] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -67,41 +67,40 @@ export default function AssetMonitorRoom() {
   };
 
   return (
-    <div className="p-6 max-w-7xl w-full mx-auto flex flex-col gap-6 font-mono text-xs">
-      {/* HEADER LOG FRAME */}
-      <header className="border p-5 rounded-2xl bg-zinc-100/60 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-200">
+    <div className="p-6 max-w-7xl w-full mx-auto flex flex-col gap-6 text-zinc-900 dark:text-zinc-100">
+      {/* MONITOR CONTROL STATUS BAR */}
+      <header className="border p-5 rounded-xl bg-white dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
         <div>
-          <h2 className="font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            DATA_FLOW_MONITOR
-          </h2>
+          <h2 className="font-bold">// DATA_STREAM_GATEWAY</h2>
           <p className="text-[10px] text-zinc-400 font-sans mt-0.5">
-            Real-time asset network routing validation module.
+            Telemetry parser routing matrix endpoint node validation execution
+            link.
           </p>
         </div>
-        <div className="text-[9px] border px-3 py-1 rounded-full bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
-          LOCAL_HOST: <span className="font-bold">{API_URL}</span>
+        <div className="text-[9px] border px-3 py-1 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
+          GATEWAY: <span className="font-bold">{API_URL}</span>
         </div>
       </header>
 
-      {/* WORKSPACE COMPONENT GRID */}
+      {/* COMPONENT CONTENT LAYOUT GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT COLUMN DECK CONTROLLERS */}
+        {/* SIDE ACTIONS BAR DECK */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* SEARCH COMPONENT MODULE */}
-          <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl relative transition-colors duration-200">
+          {/* SCRIP SEARCH FILTER INPUT */}
+          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl relative transition-colors">
             <span className="text-[10px] text-zinc-400 block mb-2">
-              INDEX ENTRY SCANNER
+              INDEX TRACKER SELECTOR
             </span>
             <input
               type="text"
-              placeholder="INPUT SYMBOL..."
+              placeholder="SEARCH SYMBOL..."
               value={symbol}
               onChange={(e) => setSymbol(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-[11px] focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-all text-zinc-900 dark:text-zinc-100"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-all text-zinc-900 dark:text-zinc-100"
             />
 
             {suggestions.length > 0 && (
-              <div className="absolute left-5 right-5 mt-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="absolute left-5 right-5 mt-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-50 max-h-44 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
                 {suggestions.map((item, idx) => (
                   <div
                     key={idx}
@@ -115,10 +114,10 @@ export default function AssetMonitorRoom() {
                         ]);
                       }
                     }}
-                    className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer flex flex-col"
+                    className="p-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer flex flex-col"
                   >
                     <span className="font-bold">{item.symbol}</span>
-                    <span className="text-[10px] text-zinc-400 font-sans truncate mt-0.5">
+                    <span className="text-[10px] text-zinc-400 font-sans truncate">
                       {item.name}
                     </span>
                   </div>
@@ -127,19 +126,19 @@ export default function AssetMonitorRoom() {
             )}
           </div>
 
-          {/* ACTIVE WATCHLIST COMPONENT MATRIX */}
-          <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl flex-1 flex flex-col transition-colors duration-200">
+          {/* ACTIVE WATCHLIST SYSTEM MATRIX GRID */}
+          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl flex-1 flex flex-col transition-colors">
             <span className="text-[10px] text-zinc-400 block mb-3">
-              RADAR MATRIX
+              SYSTEM DESK WATCHLIST
             </span>
-            <div className="flex flex-col gap-2 overflow-y-auto max-h-[460px]">
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[440px]">
               {watchlist.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 border rounded-xl transition-all ${
+                  className={`p-4 border rounded-lg transition-all ${
                     selectedAsset === item.symbol
-                      ? "bg-white dark:bg-zinc-900 border-zinc-400 dark:border-zinc-100 shadow-sm"
-                      : "bg-white/40 dark:bg-black/20 border-zinc-200 dark:border-zinc-800/70 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      ? "bg-zinc-100 dark:bg-zinc-950 border-zinc-400 dark:border-zinc-200"
+                      : "bg-zinc-50/50 dark:bg-black/10 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700"
                   }`}
                 >
                   <div>
@@ -148,18 +147,18 @@ export default function AssetMonitorRoom() {
                       {item.description}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-4 text-[10px]">
+                  <div className="grid grid-cols-2 gap-2 mt-4 text-[9px]">
                     <button
                       onClick={() => triggerLiveTracking(item.symbol)}
-                      className="border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-zinc-400 dark:hover:border-zinc-400 py-1 bg-white dark:bg-zinc-950 transition-all"
+                      className="border border-zinc-200 dark:border-zinc-700 rounded-md hover:border-zinc-400 dark:hover:border-zinc-500 py-1 bg-white dark:bg-zinc-900 transition-colors"
                     >
-                      TRACK_FEED
+                      [ TRACK ]
                     </button>
                     <button
                       onClick={() => executeQuantAnalysis(item.symbol)}
-                      className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-lg font-bold py-1 transition-all hover:opacity-80"
+                      className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-md font-bold py-1 transition-opacity hover:opacity-80"
                     >
-                      COMPILE_AI
+                      [ ANALYZE ]
                     </button>
                   </div>
                 </div>
@@ -168,86 +167,86 @@ export default function AssetMonitorRoom() {
           </div>
         </div>
 
-        {/* RIGHT ANALYST RESPONSE VIEW GRID */}
+        {/* RIGHT STRATEGIC EVALUATION MATRICES DISPLAY */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-200">
+          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
             <div>
-              <p className="text-[10px] text-zinc-400 uppercase">
-                AUDIT FRAME ASSIGNMENT
+              <p className="text-[9px] text-zinc-400 uppercase">
+                AUDIT MATRIX OBJECT REFERENCE
               </p>
-              <h2 className="text-sm font-bold tracking-tight mt-0.5">
+              <h2 className="font-bold tracking-tight mt-0.5">
                 {selectedAsset}
               </h2>
             </div>
             {loading && (
-              <span className="border border-zinc-400 dark:border-white px-3 py-1 rounded-full animate-pulse text-[10px]">
-                CALCULATING COGNITIVE LOGIC DATA FIELDS...
+              <span className="border border-zinc-400 dark:border-zinc-200 px-3 py-1 rounded-md animate-pulse text-[9px]">
+                CALCULATING COGNITIVE MODEL FIELD VALUES...
               </span>
             )}
           </div>
 
           {analysis ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* GROQ AUDIT LOG FILE MODULE */}
-              <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200">
-                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-black/40 p-4 flex justify-between items-center">
+              {/* GROQ ASSESSMENT LOG SHEET FILE */}
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col transition-colors">
+                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black/30 p-4 flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold">ENGINE_A // LOGIC</h3>
+                    <h3 className="font-bold">ENGINE_A // MODEL</h3>
                     <p className="text-[9px] text-zinc-400 font-sans">
                       Llama-3.3 70B
                     </p>
                   </div>
-                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded-lg bg-white dark:bg-zinc-950 font-bold">
+                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded bg-zinc-50 dark:bg-zinc-950 font-bold">
                     {analysis.groq?.recommendation || "HOLD"}
                   </span>
                 </div>
                 <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex justify-between">
-                    <span className="text-zinc-400">BIAS VALUE:</span>
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2 rounded-lg flex justify-between">
+                    <span className="text-zinc-400">NET CONVICTION VALUE:</span>
                     <span className="font-bold">
                       {analysis.groq?.sentiment_score?.toFixed(2)}
                     </span>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-lg text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
                     {analysis.groq?.reasoning}
                   </div>
                 </div>
               </div>
 
-              {/* GEMINI AUDIT LOG FILE MODULE */}
-              <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-200">
-                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-black/40 p-4 flex justify-between items-center">
+              {/* GEMINI ASSESSMENT LOG SHEET FILE */}
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col transition-colors">
+                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black/30 p-4 flex justify-between items-center">
                   <div>
                     <h3 className="font-bold">ENGINE_B // MATRIX</h3>
                     <p className="text-[9px] text-zinc-400 font-sans">
                       Flash-Lite 3.1
                     </p>
                   </div>
-                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded-lg bg-white dark:bg-zinc-950 font-bold">
+                  <span className="border border-zinc-300 dark:border-zinc-700 px-2 rounded bg-zinc-50 dark:bg-zinc-950 font-bold">
                     {analysis.gemini?.recommendation || "HOLD"}
                   </span>
                 </div>
                 <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex justify-between">
-                    <span className="text-zinc-400">BIAS VALUE:</span>
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2 rounded-lg flex justify-between">
+                    <span className="text-zinc-400">NET CONVICTION VALUE:</span>
                     <span className="font-bold">
                       {analysis.gemini?.sentiment_score?.toFixed(2)}
                     </span>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-lg text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
                     {analysis.gemini?.reasoning}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="border border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-100/10 dark:bg-zinc-900/5 rounded-2xl flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[360px]">
-              <span className="text-zinc-400 uppercase tracking-widest font-bold">
-                [ INDEX VECTOR STRUCT HOLLOW ]
+            <div className="border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 rounded-xl flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[350px]">
+              <span className="text-zinc-400 uppercase font-bold tracking-wider text-[10px]">
+                [ SYSTEM LOG VECTOR UNINITIALIZED ]
               </span>
               <p className="text-zinc-400 font-sans max-w-xs mt-2 leading-relaxed">
-                Fire an evaluation matrix audit command from your watched
-                targets panel to populate analytical rows.
+                Fire an execution assessment command array from yourwatched
+                asset list component grid to run multi-factor data models.
               </p>
             </div>
           )}
