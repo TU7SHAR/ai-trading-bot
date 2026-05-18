@@ -11,6 +11,9 @@ class Config:
     MOBILE = os.getenv("KOTAK_MOBILE")
     MPIN = os.getenv("KOTAK_MPIN")
     
+    # MISSING LINE ADDED HERE:
+    TOTP_SECRET = os.getenv("KOTAK_TOTP_SECRET")
+    
     # DB Settings
     DATABASE_URL = os.getenv("DATABASE_URL")
     

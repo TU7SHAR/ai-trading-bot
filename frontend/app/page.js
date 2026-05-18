@@ -1,316 +1,266 @@
+"use strict";
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import {
-  Activity,
-  TrendingUp,
-  Search,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
 
-export default function Home() {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+export default function LiveMonitorRoom() {
   const [symbol, setSymbol] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [trackStatus, setTrackStatus] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
-  const [error, setError] = useState(null);
-
   const [suggestions, setSuggestions] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const dropdownRef = useRef(null);
+  const [selectedAsset, setSelectedAsset] = useState("RELIANCE-EQ");
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:8000";
+  const [watchlist, setWatchlist] = useState([
+    { symbol: "INDIA VIX", description: "Volatility Benchmark Index" },
+    { symbol: "SILVERBEES-EQ", description: "Nippon India Silver ETF" },
+    { symbol: "TATSILV-EQ", description: "Tata Capital Silver ETF" },
+    { symbol: "RELIANCE-EQ", description: "Reliance Industries Equity" },
+  ]);
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
+    if (!symbol.trim()) {
+      setSuggestions([]);
+      return;
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
     const timer = setTimeout(async () => {
-      if (symbol.trim().length >= 2) {
-        setIsSearching(true);
-        try {
-          const res = await fetch(`${API_URL}/search/${symbol.trim()}`);
-          if (res.ok) {
-            const data = await res.json();
-            setSuggestions(data);
-            setShowDropdown(data.length > 0);
-          }
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setIsSearching(false);
+      setIsSearching(true);
+      try {
+        const res = await fetch(`${API_URL}/search/${symbol.trim()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data);
         }
-      } else {
-        setSuggestions([]);
-        setShowDropdown(false);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
       }
     }, 300);
-
     return () => clearTimeout(timer);
   }, [symbol]);
 
-  const selectSymbol = (selectedSymbol) => {
-    setSymbol(selectedSymbol);
-    setShowDropdown(false);
-  };
-
-  const handleTrack = async (e) => {
-    e.preventDefault();
-    if (!symbol) return;
-
-    setLoading(true);
-    setError(null);
-    setTrackStatus(null);
-    setAnalysis(null);
-    setShowDropdown(false);
-
+  const triggerLiveTracking = async (tgtSymbol) => {
     try {
-      const res = await fetch(`${API_URL}/track/${symbol}`);
-      if (!res.ok) throw new Error("Failed to track symbol");
-      const data = await res.json();
-      setTrackStatus(data);
+      await fetch(`${API_URL}/track/${tgtSymbol}`);
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
 
-  const handleAnalyze = async (e) => {
-    e.preventDefault();
-    if (!symbol) return;
-
+  const executeQuantAnalysis = async (tgtSymbol) => {
     setLoading(true);
-    setError(null);
-    setTrackStatus(null);
-    setAnalysis(null);
-    setShowDropdown(false);
-
+    setSelectedAsset(tgtSymbol);
     try {
-      const res = await fetch(`${API_URL}/brain/analyze/${symbol}`);
-      if (!res.ok) throw new Error("Failed to analyze symbol");
-      const data = await res.json();
-      setAnalysis(data);
+      const res = await fetch(`${API_URL}/brain/analyze/${tgtSymbol}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAnalysis(data);
+      }
     } catch (err) {
-      setError(err.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100">
-      <nav className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2 font-semibold text-lg tracking-tight">
-          <Activity className="w-5 h-5 text-blue-600" />
-          <span>TradeBrain</span>
-        </div>
-        <div className="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-          Live Connection: Active
-        </div>
-      </nav>
-
-      <main className="max-w-3xl mx-auto mt-16 px-6">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold tracking-tight mb-3 text-slate-900">
-            Market Intelligence
-          </h1>
-          <p className="text-slate-500 text-lg">
-            Track assets or run deep AI sentiment analysis in real-time.
+    <div className="p-6 max-w-7xl w-full mx-auto flex flex-col gap-6 font-sans">
+      {/* HEADER HERO ROW CONTAINER */}
+      <header className="border p-6 rounded-2xl bg-zinc-100/50 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300">
+        <div>
+          <h2 className="text-md font-bold tracking-tight font-mono">
+            // REALTIME_ASSET_MONITOR
+          </h2>
+          <p className="text-xs text-zinc-400 mt-1">
+            Cross-reference order depth vectors with generative risk parameters.
           </p>
         </div>
+        <div className="text-[10px] font-mono border px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
+          NODE: <span className="font-bold">{API_URL}</span>
+        </div>
+      </header>
 
-        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md mb-8">
-          <form
-            className="flex flex-col sm:flex-row gap-2 relative"
-            ref={dropdownRef}
-          >
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-slate-400" />
+      {/* COMPONENT STREAM MATRIX VIEW */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* LEFT COLUMN COMPILATIONS */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          {/* LOOKUP SEARCH MODULE */}
+          <div className="bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl relative transition-colors duration-300">
+            <span className="text-[10px] font-mono text-zinc-400 block mb-2.5">
+              REGISTRY SEARCH
+            </span>
+            <input
+              type="text"
+              placeholder="Type ticker symbol..."
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value)}
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-zinc-950 dark:focus:border-white transition-all shadow-sm"
+            />
+
+            {suggestions.length > 0 && (
+              <div className="absolute left-5 right-5 mt-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 max-h-48 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+                {suggestions.map((item, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setSymbol("");
+                      setSuggestions([]);
+                      if (!watchlist.some((w) => w.symbol === item.symbol)) {
+                        setWatchlist([
+                          ...watchlist,
+                          { symbol: item.symbol, description: item.name },
+                        ]);
+                      }
+                    }}
+                    className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer flex flex-col"
+                  >
+                    <span className="text-xs font-bold font-mono">
+                      {item.symbol}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-sans truncate mt-0.5">
+                      {item.name}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <input
-                type="text"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                onFocus={() => {
-                  if (suggestions.length > 0) setShowDropdown(true);
-                }}
-                placeholder="Search NSE symbols..."
-                className="w-full pl-11 pr-4 py-3 bg-transparent border-none focus:ring-0 text-lg placeholder-slate-400 outline-none uppercase font-medium"
-                autoComplete="off"
-              />
+            )}
+          </div>
 
-              {showDropdown && (
-                <ul className="absolute left-0 right-0 mt-3 z-20 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-                  {isSearching && suggestions.length === 0 ? (
-                    <li className="px-5 py-4 text-slate-400 text-sm flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mr-2"></div>
-                      Searching live market...
-                    </li>
-                  ) : (
-                    suggestions.map((stock, idx) => (
-                      <li
-                        key={`${stock.symbol}-${idx}`}
-                        onClick={() => selectSymbol(stock.symbol)}
-                        className="px-5 py-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors"
-                      >
-                        <span className="font-bold text-slate-900">
-                          {stock.symbol}
-                        </span>
-                        <span className="text-sm text-slate-500 truncate ml-4">
-                          {stock.name}
-                        </span>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              )}
+          {/* WATCHED TOKENS MATRICES */}
+          <div className="bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl flex-1 flex flex-col transition-colors duration-300">
+            <span className="text-[10px] font-mono text-zinc-400 block mb-3">
+              WORKSPACE RADAR
+            </span>
+            <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[480px]">
+              {watchlist.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 border rounded-xl transition-all ${
+                    selectedAsset === item.symbol
+                      ? "bg-white dark:bg-zinc-900 border-zinc-400 dark:border-white shadow-md"
+                      : "bg-white/40 dark:bg-black/20 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700"
+                  }`}
+                >
+                  <div>
+                    <span className="text-xs font-bold font-mono block">
+                      {item.symbol}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                      {item.description}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-4 font-mono">
+                    <button
+                      onClick={() => triggerLiveTracking(item.symbol)}
+                      className="text-[10px] border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-zinc-400 dark:hover:border-zinc-400 py-1.5 transition-all bg-white dark:bg-zinc-950"
+                    >
+                      TRACK
+                    </button>
+                    <button
+                      onClick={() => executeQuantAnalysis(item.symbol)}
+                      className="text-[10px] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-lg font-bold border border-transparent py-1.5 transition-all hover:opacity-90"
+                    >
+                      ANALYZE
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="flex gap-2 p-1">
-              <button
-                onClick={handleTrack}
-                disabled={loading || !symbol}
-                className="px-6 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50"
-              >
-                Track Live
-              </button>
-              <button
-                onClick={handleAnalyze}
-                disabled={loading || !symbol}
-                className="px-6 py-2 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Analyze
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
 
-        {loading && (
-          <div className="flex justify-center py-12">
-            <div className="animate-pulse flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
-              <p className="text-slate-500 text-sm font-medium">
-                Processing request...
+        {/* RIGHT ANALYST OUTPUT FIELD SHEETS */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-300">
+            <div>
+              <p className="text-[10px] font-mono text-zinc-400 uppercase">
+                ACTIVE EVALUATION OBJECT
+              </p>
+              <h2 className="text-md font-bold font-mono tracking-tight mt-0.5">
+                {selectedAsset}
+              </h2>
+            </div>
+            {loading && (
+              <span className="text-[10px] font-mono border border-zinc-400 dark:border-white px-3 py-1 rounded-full animate-pulse">
+                GENERATING REGIN ASSESSMENT CODES...
+              </span>
+            )}
+          </div>
+
+          {analysis ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* GROQ FRAME MODAL */}
+              <div className="bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-300">
+                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-black/40 p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xs font-bold font-mono">
+                      GROQ MODEL ANALYST
+                    </h3>
+                    <p className="text-[9px] font-mono text-zinc-400">
+                      Llama-3.3 70B
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold border border-zinc-300 dark:border-zinc-700 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-950">
+                    {analysis.groq?.recommendation || "HOLD"}
+                  </span>
+                </div>
+                <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-3 rounded-xl flex justify-between text-xs font-mono">
+                    <span className="text-zinc-400">CONVICTION INDEX:</span>
+                    <span className="font-bold">
+                      {analysis.groq?.sentiment_score?.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                    {analysis.groq?.reasoning}
+                  </div>
+                </div>
+              </div>
+
+              {/* GEMINI FRAME MODAL */}
+              <div className="bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col transition-colors duration-300">
+                <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-black/40 p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xs font-bold font-mono">
+                      GEMINI REGIME DESK
+                    </h3>
+                    <p className="text-[9px] font-mono text-zinc-400">
+                      Flash-Lite 3.1
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold border border-zinc-300 dark:border-zinc-700 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-950">
+                    {analysis.gemini?.recommendation || "HOLD"}
+                  </span>
+                </div>
+                <div className="p-4 flex flex-col gap-3 flex-1 bg-white dark:bg-zinc-950">
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-3 rounded-xl flex justify-between text-xs font-mono">
+                    <span className="text-zinc-400">CONVICTION INDEX:</span>
+                    <span className="font-bold">
+                      {analysis.gemini?.sentiment_score?.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed min-h-[220px] font-sans whitespace-pre-wrap">
+                    {analysis.gemini?.reasoning}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="border border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-100/20 dark:bg-zinc-900/10 rounded-2xl flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[380px]">
+              <span className="text-xs font-mono text-zinc-400 font-bold uppercase tracking-widest">
+                [ INDEX VECTOR SYSTEM UNLIT ]
+              </span>
+              <p className="text-xs text-zinc-400 font-sans max-w-xs mt-2 leading-relaxed">
+                Fire an evaluation matrix audit command from your watched
+                metrics ledger to begin compiling quantitative logic fields.
               </p>
             </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-4 bg-red-50 text-red-700 rounded-xl flex items-start gap-3 border border-red-100 mb-6">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-semibold">System Error</h4>
-              <p className="text-sm opacity-90">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {trackStatus && (
-          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="bg-green-100 p-3 rounded-full text-green-600">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-slate-900">
-                {trackStatus.symbol}
-              </h3>
-              <p className="text-slate-500">{trackStatus.status}</p>
-            </div>
-          </div>
-        )}
-
-        {analysis && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h3 className="text-xl font-bold text-slate-800 px-1">
-              Analysis Breakdown: {analysis.symbol}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                <div className="p-6 border-b border-slate-100">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">
-                        Groq (Llama-3 70B)
-                      </p>
-                      <span
-                        className={`inline-block mt-1 px-3 py-1 rounded-full font-bold text-xs tracking-wide ${
-                          analysis.groq.recommendation === "BUY"
-                            ? "bg-green-100 text-green-700"
-                            : analysis.groq.recommendation === "SELL"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {analysis.groq.recommendation}
-                      </span>
-                    </div>
-                    <div className="font-mono text-lg font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-lg">
-                      {analysis.groq.sentiment_score > 0 ? "+" : ""}
-                      {analysis.groq.sentiment_score.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6 bg-slate-50/50 flex-1">
-                  <p className="text-sm font-semibold text-slate-500 mb-1">
-                    Reasoning Output
-                  </p>
-                  <p className="text-slate-700 text-sm leading-relaxed">
-                    {analysis.groq.reasoning}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                <div className="p-6 border-b border-slate-100">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 mb-1">
-                        Gemini 3.1 Flash-Lite
-                      </p>
-                      <span
-                        className={`inline-block mt-1 px-3 py-1 rounded-full font-bold text-xs tracking-wide ${
-                          analysis.gemini.recommendation === "BUY"
-                            ? "bg-green-100 text-green-700"
-                            : analysis.gemini.recommendation === "SELL"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {analysis.gemini.recommendation}
-                      </span>
-                    </div>
-                    <div className="font-mono text-lg font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-lg">
-                      {analysis.gemini.sentiment_score > 0 ? "+" : ""}
-                      {analysis.gemini.sentiment_score.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6 bg-slate-50/50 flex-1">
-                  <p className="text-sm font-semibold text-slate-500 mb-1">
-                    Reasoning Output
-                  </p>
-                  <p className="text-slate-700 text-sm leading-relaxed">
-                    {analysis.gemini.reasoning}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
